@@ -1,0 +1,53 @@
+//exercise 3
+//Chris Chewning
+#include<stdio.h>
+#include<math.h>
+#include<stdlib.h>
+
+//program to evaluate e^x using maclaurin series
+int main(){
+
+  double x;
+  char term;
+  int itr;
+  double *ans;
+  double err;
+
+  //promt user for input x
+  printf("Enter an integer x such that e^(x) will be evaluated using a Maclaurin Series: ");
+
+  //checking if valid integer input and gives error if wrong input
+  if ( scanf("%lf%c", &x, &term) != 2 || term != '\n'){
+    printf("Not a valid integer input\n");
+    return -1;
+  }
+    double errorrange;
+    printf("Enter an error criterion for convergence: ");
+    scanf("%lf",&errorrange);
+    
+
+
+    double denominator = 1;//using for factorial
+    double numerator;//using for factorial
+    //algorithm to calculate e^x where x is a given input    
+    int i=1;
+    ans  = malloc(sizeof(double) *1000);
+    ans[0] = 1;
+    do
+      {
+      numerator = pow(x,i);
+      denominator *= i;
+	ans[i] =  numerator/denominator + ans[i-1];
+	i++;
+    }
+
+    while (ans[i-1]-ans[i-2] >= errorrange && (i<1000));
+    err = ans[i-1]-ans[i-2];
+
+//printing correct output format such as:
+//After itr terms in the series, exp(x) is approx. ans with an error of err
+   printf("After %d terms in the series, exp(%.1lf) is approx. %.4lf with an error of %.8lf\n",i,x,ans[i-1],err);
+      
+
+    return 0;
+  }
