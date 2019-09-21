@@ -1,0 +1,174 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//program to read and store data from a tab separated file
+
+int main(int argc, char *argv[]){
+
+  FILE *data;
+  if (argc != 2){
+    printf("Invalid commandline input\n");
+    return -1;
+
+  }//end if
+
+  //opening the file
+  data = fopen(argv[1], "r");
+  if (data == NULL){
+    printf("invalid data file input\n");
+    return -2;
+  }//end if
+  
+  //counting the lines
+  int line_count = 0;
+  char chr[200];
+  fgets(chr,200,data);
+  char *currentXvalue;
+  char *currentYvalue;
+  char *currentXvel;
+  char *currentYvel;
+  double Xmin = 1000000000;
+  double Xmax = -100000000;
+  double Ymin = 1000000000;
+  double Ymax = -100000000;
+  double Xrange;
+  double Yrange;
+  int Xcount = 0;
+  int Ycount = 0;
+  double firstx;
+  double firsty;
+ 
+  while (fgets(chr,200,data) != NULL){
+
+    line_count = line_count+1;
+    currentXvalue = strtok(chr, "\t");
+    currentYvalue = strtok(NULL, "\t");
+    currentXvel = strtok(NULL, "\t");
+    currentYvel = strtok(NULL, "\t");
+
+    double X  = atof(currentXvalue);
+    double Y = atof(currentYvalue);
+    double Xvel = atof(currentXvel);
+    double Yvel = atof(currentYvel);
+    if (line_count == 1){
+      firstx = X;
+      firsty = Y;
+      
+    }//end if
+
+    if (X<Xmin){
+      Xmin = X;
+    }//end Xmin if
+    if (X>Xmax){
+      Xmax = X;
+    }//end Xmax if
+    if (Y<Ymin){
+      Ymin = Y;
+    }//end Ymin if
+    if(Y>Ymax){
+      Ymax = Y;
+    }//end Ymax if
+
+    if (X == firstx){
+      Xcount++;
+	}//end xcount if
+    if (Y == firsty){
+      Ycount++;
+    }//end ycount if
+    
+
+  }//end counting while
+
+  fclose(data);
+  data = fopen(argv[1], "r");
+
+  Xrange = Xmax - Xmin;
+  Yrange = Ymax - Ymin;
+  double Xspacing = Xrange/(Ycount-1);
+  double Yspacing = Yrange/(Xcount-1);
+  int i = 0;
+  int j = 0;
+
+
+    //need to allocate matricies for the data we are storing
+  //each line contains four data values X & Y position and velocity
+  double Xvelocity[Ycount][Xcount];
+  double Yvelocity[Ycount][Xcount];
+  
+  fgets(chr,200,data);//gets us past the header line
+    while (fgets(chr,200,data) != NULL){
+          line_count = line_count+1;
+    currentXvalue = strtok(chr, "\t");
+    currentYvalue = strtok(NULL, "\t");
+    currentXvel = strtok(NULL, "\t");
+    currentYvel = strtok(NULL, "\t");
+
+    double X  = atof(currentXvalue)/1000; //changing from mm to m
+    double Y = atof(currentYvalue)/1000; //changing from mm to m
+    double Xvel = atof(currentXvel);
+    double Yvel = atof(currentYvel);
+
+    Xvelocity[i][j] = Xvel;
+    Yvelocity[i][j] = Yvel;
+    j++;
+    if (j==Xcount){
+      j = 0;
+      i++;
+
+    }//end if
+      
+
+
+    }//end second while
+    fclose(data);
+
+    //printing these mumbo jumbos to their repective .txt files
+    FILE *Xpointy;
+    FILE *Ypointy;
+    Xpointy = fopen("Xvel.txt", "w");
+    Ypointy = fopen("Yvel.txt", "w");
+
+    for(i = 0; i<Ycount; i++){
+      for (j = 0; j<Xcount; j++){
+	fprintf(Xpointy,"%lf\t",Xvelocity[i][j]);
+	fprintf(Ypointy,"%lf\t",Yvelocity[i][j]);
+
+
+      }//end inner for
+      fprintf(Xpointy,"\n");
+      fprintf(Ypointy,"\n");
+
+    }//end first for
+    fclose(Xpointy);
+    fclose(Ypointy);
+
+    //now computing the curl
+    //allocate a new matrix (4 smaller on each dimension than our velocity fields
+    double VortMatrix[Ycount - 4][Xcount - 4];
+
+    for (i=2;i<(Ycount-2);i++){
+      for (j = 2; j<(Xcount-2);j++){
+	VortMatrix[i-2][j-2] = (-Yvelocity[i+2][j]+8*Yvelocity[i+1][j]-8*Yvelocity[i-1][j]+Yvelocity[i-2][j])/(12*Xspacing)
+	  - (-Xvelocity[i][j+2]+8*Xvelocity[i][j+1]-8*Xvelocity[i][j-1]+Xvelocity[i][j-2])/(12*Yspacing);
+
+      }//end inner for loop
+
+
+
+    }//end outer for loop
+
+    //printing this thing to a txt file called Vort.txt
+    FILE *VortPointy;
+    VortPointy = fopen("Vort.txt", "w");
+    for (i = 0;i<(Ycount-4);i++){
+      for (j = 0;j<(Xcount-4);j++){
+	fprintf(VortPointy,"%lf\t",VortMatrix[i][j]);
+
+      }//end inner for loop
+
+      fprintf(VortPointy,"\n");
+    }//end outer for loop
+    fclose(VortPointy);
+
+}//end main
