@@ -1,0 +1,170 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<math.h>
+
+//Chris Chewning AERE 361 Lab 14
+//Plotting Earth-Moon Trajectory given an initial position and delta V
+
+int main(int argc, char *argv[]) {
+  double x, x1, x2, x3, x4, x5, x6, xf, xdot, xdot1, xdot2, xdot3, xdot4, xdot5, xdot6, xdotf, xdd, xdd1, xdd2, xdd3, xdd4, xdd5, xdd6;
+  double y, y1, y2, y3, y4, y5, y6, yf, ydot, ydot1, ydot2, ydot3, ydot4, ydot5, ydot6, ydotf, ydd, ydd1, ydd2, ydd3, ydd4, ydd5, ydd6;
+  double dv, delta, mu = 0.01215, h = 0.2, err = 0.0001, R, min = 10, max = h, t; //example uses .00001 for initial error, but using .0001 saves a ton of time on calculations
+  double temp[4], k1[4], k2[4], k3[4], k4[4], k5[4], k6[4];
+  int iterations = 0, s = 1, c1 = 2, c2, u, i;
+  // char * GNU[] = { "set title \"Earth-Moon Synodic Frame\"", "set xlabel 'S1 [km]'", "set ylabel 'S2 [km]'", "set key off",
+//	  "set obj 1 circle at 4670.46,0 size scr .04 fc rgb \"red\"","set obj 2 circle at -379729.54,0 size scr .01 fc rgb \"navy\"", "plot 'data'"};
+ 
+  FILE *result;
+//FILE *gnuPipe = popen("gnuplot -persistent", "w");
+
+  while(c1 == 2) {
+    printf("\n Enter delta V in km/s: ");
+    scanf("%lf", &dv);
+    result = fopen("data","w+");
+    x1 = 4670.46/384400;
+    xdot1 = -(9.238231 + dv)/1.0183028463;
+    y1 = 42164.1/384400;
+    ydot1 = 0;
+    t = 0;
+
+    while(t < 7) {
+      u = 0;
+      //using RK-45 for K 1-7
+      while(u != 1) {
+	//K1
+	xdd1 = -((1-mu)*(x1-mu))/(pow(sqrt((x1-mu)*(x1-mu)+y1*y1),3))-(mu*(x1+1-mu))/(pow(sqrt(pow((x1+(1-mu)),2)+y1*y1),3))+2*ydot1+x1;
+	ydd1 = -((1-mu)*y1)/(pow(sqrt((x1-mu)*(x1-mu)+y1*y1),3))-(mu*y1)/(pow(sqrt(pow((x1+(1-mu)),2)+y1*y1),3))-2*xdot1+y1; 
+	
+	temp[0] = xdot1; temp[1] = xdd1; temp[2] = ydot1; temp[3] = ydd1;
+
+	for(i=0; i<4; i++) {
+	  k1[i] = h*temp[i];
+	}
+
+	//K2
+	x2 = x1 + k1[0]/4;
+	xdot2 = xdot1 + k1[1]/4;
+	y2 = y1 + k1[2]/4;
+	ydot2 = ydot1 + k1[3]/4;
+	xdd2 = -((1-mu)*(x2-mu))/(pow(sqrt((x2-mu)*(x2-mu)+y2*y2),3))-(mu*(x2+1-mu))/(pow(sqrt(pow((x2+(1-mu)),2)+y2*y2),3))+2*ydot2+x2;
+	ydd2 = -((1-mu)*y2)/(pow(sqrt((x2-mu)*(x2-mu)+y2*y2),3))-(mu*y2)/(pow(sqrt(pow((x2+(1-mu)),2)+y2*y2),3))-2*xdot2+y2;
+	
+	temp[0] = xdot2; temp[1] = xdd2; temp[2] = ydot2; temp[3] = ydd2;
+
+	for(i=0; i<4; i++) {
+	  k2[i] = h*temp[i];
+	}
+
+	//K3
+	x3 = (x1+3*k1[0]/32+9*k2[0]/32);
+	xdot3 = (xdot1+3*k1[1]/32+9*k2[1]/32);
+	y3 = (y1+3*k1[2]/32+9*k2[2]/32);
+	ydot3 = (ydot1+3*k1[3]/32+9*k2[3]/32);
+	xdd3 = -((1-mu)*(x3-mu))/(pow(sqrt((x3-mu)*(x3-mu)+y3*y3),3))-(mu*(x3+1-mu))/(pow(sqrt(pow((x3+(1-mu)),2)+y3*y3),3))+2*ydot3+x3;
+	ydd3 = -((1-mu)*y3)/(pow(sqrt((x3-mu)*(x3-mu)+y3*y3),3))-(mu*y3)/(pow(sqrt(pow((x3+(1-mu)),2)+y3*y3),3))-2*xdot3+y3;
+
+	temp[0] = xdot3; temp[1] = xdd3; temp[2] = ydot3; temp[3] = ydd3;
+
+	for(i=0; i<4; i++) {
+	  k3[i]=h*temp[i];
+	}
+
+	//K4
+	x4 = x1+1932/2197*k1[0]-7200/2197*k2[0]+7296/2197*k3[0];
+	xdot4 = xdot1+1932/2197*k1[1]-7200/2197*k2[1]+7296/2197*k3[1];
+	y4 = y1+1932/2197*k1[2]-7200/2197*k2[2]+7296/2197*k3[2];
+	ydot4 = ydot1+1932/2197*k1[3]-7200/2197*k2[3]+7296/2197*k3[3];
+	xdd4 = -((1-mu)*(x4-mu))/(pow(sqrt((x4-mu)*(x4-mu)+y4*y4),3))-(mu*(x4+1-mu))/(pow(sqrt(pow((x4+(1-mu)),2)+y4*y4),3))+2*ydot4+x4;
+	ydd4 = -((1-mu)*y4)/(pow(sqrt((x4-mu)*(x4-mu)+y4*y4),3))-(mu*y4)/(pow(sqrt(pow((x4+(1-mu)),2)+y4*y4),3))-2*xdot4+y4;
+
+	temp[0] = xdot4; temp[1] = xdd4; temp[2] = ydot4; temp[3] = ydd4;
+
+	for(i=0; i<4; i++) {
+	  k4[i]=h*temp[i];
+	}
+
+	//K5
+	x5=(x1+439/216*k1[0]-8*k2[0]+3680/513*k3[0]-845/4104*k4[0]);
+	xdot5=(xdot1+439/216*k1[1]-8*k2[1]+3680/513*k3[1]-845/4104*k4[1]);
+	y5=(y1+439/216*k1[2]-8*k2[2]+3680/513*k3[2]-845/4104*k4[2]);
+	ydot5=(ydot1+439/216*k1[3]-8*k2[3]+3680/513*k3[3]-845/4104*k4[3]);
+	xdd5=-((1-mu)*(x5-mu))/(pow(sqrt((x5-mu)*(x5-mu)+y5*y5),3))-(mu*(x5+1-mu))/(pow(sqrt(pow((x5+(1-mu)),2)+y5*y5),3))+2*ydot5+x5;
+	ydd5=-((1-mu)*y5)/(pow(sqrt((x5-mu)*(x5-mu)+y5*y5),3))-(mu*y5)/(pow(sqrt(pow((x5+(1-mu)),2)+y5*y5),3))-2*xdot5+y5;
+
+	temp[0] = xdot5; temp[1] = xdd5; temp[2] = ydot5; temp[3] = ydd5;
+
+	for(i=0; i<4; i++) {
+	  k5[i]=h*temp[i];
+	}
+
+	//K6
+	x6 = (x1-8/27*k1[0]+2*k2[0]-3544/2565*k3[0]+1859/4104*k4[0]-11/40*k5[0]);
+	xdot6 = (xdot1-8/27*k1[1]+2*k2[1]-3544/2565*k3[1]+1859/4104*k4[1]-11/40*k5[1]);
+	y6 = (y1-8/27*k1[2]+2*k2[2]-3544/2565*k3[2]+1859/4104*k4[2]-11/40*k5[2]);
+	ydot6 =(ydot1-8/27*k1[3]+2*k2[3]-3544/2565*k3[3]+1859/4104*k4[3]-11/40*k5[3]);
+	xdd6 = -((1-mu)*(x6-mu))/(pow(sqrt((x6-mu)*(x6-mu)+y6*y6),3))-(mu*(x6+1-mu))/(pow(sqrt(pow((x6+(1-mu)),2)+y6*y6),3))+2*ydot6+x6;
+	ydd6 = -((1-mu)*y6)/(pow(sqrt((x6-mu)*(x6-mu)+y6*y6),3))-(mu*y6)/(pow(sqrt(pow((x6+(1-mu)),2)+y6*y6),3))-2*xdot6+y6;
+
+	temp[0] = xdot6; temp[1] = xdd6; temp[2] = ydot6; temp[3] = ydd6;
+
+	for(i=0; i<4; i++) {
+	  k6[i]=h*temp[i];
+	}
+
+	//Results
+	x = x1+25*k1[0]/216+1408*k3[0]/2565+2197*k4[0]/4104-k5[0]/5;
+	xdot = xdot1+25*k1[1]/216+1408*k3[1]/2565+2197*k4[1]/4104-k5[1]/5;
+	y = y1+25*k1[2]/216+1408*k3[2]/2565+2197*k4[2]/4104-k5[2]/5;       
+	ydot = ydot1+25*k1[3]/216+1408*k3[3]/2565+2197*k4[3]/4104-k5[3]/5;
+	xf = x1+16*k1[0]/135+6656*k3[0]/12825+28561*k4[0]/56430-9*k5[0]/50+2*k6[0]/55;
+	xdotf = xdot1+16*k1[1]/135+6656*k3[1]/12825+28561*k4[1]/56430-9*k5[1]/50+2*k6[1]/55;
+	yf = y1+16*k1[2]/135+6656*k3[2]/12825+28561*k4[2]/56430-9*k5[2]/50+2*k6[2]/55;
+	ydotf = ydot1+16*k1[3]/135+6656*k3[3]/12825+28561*k4[3]/56430-9*k5[3]/50+2*k6[3]/55;
+
+	//Finding error and delta
+	R = (sqrt(pow((x-xf),2)+pow((xdot-xdotf),2)+pow((y-yf),2)+pow((ydot-ydotf),2))/h);
+	delta = 0.84*pow((err/R),0.25);
+
+	//Step adjustment
+	if (R<err){
+	  u=1;
+	  x1=x;
+	  xdot1=xdot;
+	  y1=y;
+	  ydot1=ydot;
+	  fprintf(result,"%lf\t%lf\n",x*384400,y*384400);
+	}
+
+	h=h*delta;
+	if (h<min){
+	  min=h;
+	}
+
+	iterations++;
+      } //end third while
+
+      t=t+h;
+    } //end second while
+ 
+    system("gnuplot dumb.gp");
+    printf("To plot a new delta V enter 1 or enter any other key to end here: ");
+    scanf("%d", &c2);
+    //  fclose(result);
+    dv = getchar();
+    if(c2 != 1) {
+      break;
+    }
+  } //end first while
+
+ 
+  printf("Max step size: %lf\n", max);
+  printf("Min step size: %lf\n", min);
+  printf("Number of function evaluations used: %d\n", iterations);
+/*  for(i=0; i<7; i++) {
+    fprintf(gnuPipe, "%s\n", GNU[i]);
+    }*/
+system("gnuplot plot.gp");
+  return 0;
+
+} //end main
