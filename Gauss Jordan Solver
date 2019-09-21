@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include<stdlib.h>
+
+int main(void) {
+    /* Declare Vairables */
+    int i,j,k,n; /*iterators*/
+    double intermediate;
+    int l;
+ 
+    /* You'll need a few more variables, including a matrix */
+
+    /* Request System Order (Number of Equtions) */
+    printf("\nHow many equations: ");
+    scanf("%d", &n);
+
+    /* Allocate Dynamic Veriables
+       (psst... malloc is pretty good at this) */
+    double **Matrix = (double **)malloc(sizeof(double*)*(n+1));
+
+    for(l=0; l<n;l++)
+      {
+	Matrix[l] = (double *)malloc(n*sizeof(double));
+      }
+    double *X = (double *)malloc(sizeof(double)*n);
+
+    /* Request Augmented Matrix Values */
+    printf("\nEnter the elements of augmented matrix row-wise:\n");
+    for (i = 0; i < n; i++) {
+        for (j = 0; j <= n; j++) {
+            printf(" Matrix[%d][%d]:", i+1, j+1);
+            scanf("%lf", &Matrix[i][j]);
+        } /*end for*/
+    } /*end for*/
+
+    /* Diagnolize the matrix */
+    for (j = 0; j < n; j++) {
+        for (i = 0; i < n; i++) {
+            if (i != j) {
+                // There is a useful intermediate value you can compute here
+	      intermediate=Matrix[i][j]/Matrix[j][j];
+                for (k = 0; k <= n; k++) {
+                    /*This is where the magic happens ... */
+		  Matrix[i][k]=Matrix[i][k]-intermediate*Matrix[j][k];
+                }  /*end for*/
+            } /*end if*/
+        } /*end for*/
+    } /*end for*/
+
+    printf("\nThe solution is:\n");
+    for (i = 0; i < n; i++) {
+      X[i]=Matrix[i][n]/Matrix[i][i];
+        // One last math - compute the unknown from the diag and constant
+        printf("\n X%d=%f\n", i, X[i]);
+    } /*end for*/
+    
+    return 0; /*exit normally*/
+} /*end main*/
