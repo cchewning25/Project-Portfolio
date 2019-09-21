@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+//Chris Chewning AERE361 program to take argument from command line as decimal or binary and convert to the other
+//decimal to binary function
+long double dectobin(int decimal){
+    long double binary = 0;
+    int remainder;
+    int i = 1;
+
+    while (decimal!=0){
+        remainder = decimal%2;
+        decimal /= 2;
+        binary += remainder*i;
+        i *= 10;
+    }//end while
+    return binary;
+}//end first function
+
+long double dectobin2(double decimal2){
+    long double binary = 0;
+    int i = 0;
+
+    for (i = 0;i<4;i++){
+      binary += ((int)(decimal2*2)*(1/pow(10,i+1)));
+      decimal2 *= 2;
+      if (decimal2>=1){
+	decimal2 -= 1;
+      }//end if
+
+    }//end for
+
+
+    return binary;
+}//end second function
+
+
+//binary to decimal function
+int bintodec(long long binary)
+{
+  int decimal = 0;
+  int i = 0;
+  int remainder;
+    while (binary!=0){
+        remainder = binary%10;
+        binary /= 10;
+        decimal += remainder*pow(2,i);
+        ++i;
+    }
+    return decimal;
+}//end first bintodec
+
+double bintodec2(double binary2){
+  double decimal = 0;
+  int i = 0;
+  for (i=0;i<5;i++){
+    decimal += (((int)(binary2*10))*(double)(1/pow(2,i+1)));
+    binary2 *= 10.0;
+    if (binary2>=1.0){
+      binary2 -= 1.0;
+    }//end if
+    
+  }//end for
+    
+    return decimal;
+}//end second bintodec
+
+
+//starting main
+int main(int argc, char *argv[]){
+
+  char *num = argv[2];
+  int length = strlen(num);
+
+  //convert decimal to binary when user inputs decimal with a -d flag before the number
+  //example ./bindec -d 194.375 converts to 11000010.011 in binary
+  if (argc == 3 && strcmp(argv[1],"-d")==0){
+
+      //argument is a string right now, needs to be integers to operate and keep track of quotient/remaainder
+    double decimal = atof(argv[2]);
+    int cdecimal = (int) decimal;
+    double decimal2 = (decimal - cdecimal);
+    long double answer = (dectobin(decimal))+ (dectobin2(decimal2));
+
+   
+    printf("%Lf\n",answer);
+
+ }//end if
+
+  else if (argc == 3 && strcmp(argv[1],"-b")==0){
+    double binary = atof(argv[2]);
+    int cbinary = (int) binary;
+    double binary2 = (binary - cbinary);
+    double anwer =((double) bintodec(binary))+bintodec2(binary2);
+
+    printf("%lf\n",anwer);
+
+  }//end else if
+
+
+
+
+
+
+
+
+
+  //convert binary to decimal when user inputs a -b flag before the binary number
+  //ex  ./bindec -b 11000010.011 converts to 194.375 in decimal
+  /* else if (strcmp(argv[1],"-b") == 0){
+  }
+
+    //input can only include 1's 0's and possibly decimal points for binary input flag
+    //if (argv[3](n) = 1,0,.){operate on stuff}
+  if (argv[3]    {
+
+
+ }//end binary to dec if
+
+
+  //else to print error code if no flag is included in the original command line declaration
+  else {
+    printf("You did not enter the correct -d or -b flag in the command line. Try again\n");
+    return -4;
+    }//end else*/
+
+
+
+
+}//end main
